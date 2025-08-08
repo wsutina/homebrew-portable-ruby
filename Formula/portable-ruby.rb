@@ -3,7 +3,7 @@ require File.expand_path("../Abstract/portable-formula", __dir__)
 class PortableRuby < PortableFormula
   desc "Powerful, clean, object-oriented scripting language"
   homepage "https://www.ruby-lang.org/"
-  url "https://cache.ruby-lang.org/pub/ruby/3.1/ruby-3.1.4.tar.gz"
+  url "https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.7.tar.gz"
   sha256 "a3d55879a0dfab1d7141fdf10d22a07dbf8e5cdc4415da1bde06127d5cc3c7b6"
   license "Ruby"
 
