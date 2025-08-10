@@ -54,6 +54,29 @@ class PortableRuby < PortableFormula
   end
 
   def install
+    # Set up SSL certificate bundle with Block certificates for build process
+    custom_cert_file = buildpath/"custom_cert.pem"
+    openssl = Formula["portable-openssl"]
+    cp openssl.libexec/"etc/openssl/cert.pem", custom_cert_file
+    
+    # Add Block certificates if they exist (copy, don't modify originals)
+    block_cert_paths = [
+      "/opt/cpe-salt/salt/_files/mac/devtools/square-primary-g2.pem",
+      "/opt/cpe-salt/salt/_files/mac/devtools/block-service-to-service-aws-production-us-east-1.pem",
+      "/opt/cpe-salt/salt/_files/mac/devtools/block-service-to-service-aws-production-us-west-2.pem"
+    ]
+    
+    block_cert_paths.each do |cert_path|
+      if File.exist?(cert_path)
+        system "cat", cert_path, ">>", custom_cert_file
+        ohai "Added Block certificate: #{File.basename(cert_path)}"
+      end
+    end
+    
+    # Set environment variables for SSL certificate verification during build
+    ENV["SSL_CERT_FILE"] = custom_cert_file.to_s
+    ENV["CURL_CA_BUNDLE"] = custom_cert_file.to_s
+    
     # Remove almost all bundled gems and replace with our own set.
     rm_r ".bundle"
     allowed_gems = ["debug"]
@@ -152,7 +175,8 @@ class PortableRuby < PortableFormula
     end
 
     libexec.mkpath
-    cp openssl.libexec/"etc/openssl/cert.pem", libexec/"cert.pem"
+    # Use our custom certificate bundle that includes Block certificates
+    cp custom_cert_file, libexec/"cert.pem"
     openssl_rb = lib/"ruby/#{abi_version}/openssl.rb"
     inreplace openssl_rb, "require 'openssl.so'", <<~EOS.chomp
       ENV["PORTABLE_RUBY_SSL_CERT_FILE"] = ENV["SSL_CERT_FILE"] || File.expand_path("../../libexec/cert.pem", RbConfig.ruby)
