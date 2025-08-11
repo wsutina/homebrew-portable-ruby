@@ -3,8 +3,8 @@ require File.expand_path("../Abstract/portable-formula", __dir__)
 class PortableRuby < PortableFormula
   desc "Powerful, clean, object-oriented scripting language"
   homepage "https://www.ruby-lang.org/"
-  url "https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.5.tar.gz"
-  sha256 "1d88d8a27b442fdde4aa06dc99e86b0bbf0b288963d8433112dd5fac798fd5ee"
+  url "https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.7.tar.gz"
+  sha256 "8488fa620ff0333c16d437f2b890bba3b67f8745fdecb1472568a6114aad9741"
   license "Ruby"
 
   # This regex restricts matching to versions other than X.Y.0.
@@ -48,10 +48,11 @@ class PortableRuby < PortableFormula
   end
 
   # Fix compile on macOS 10.11
-  patch do
-    url "https://github.com/Bo98/ruby/commit/7aec5ca6e8ec13d92307615c32a511e02437d7de.patch?full_index=1"
-    sha256 "644f706bbbb708c2e1d32de65138c335c3710e6d47f86624f9dd98806627e83f"
-  end
+  # patch do
+  #   url "https://github.com/Bo98/ruby/commit/7aec5ca6e8ec13d92307615c32a511e02437d7de.patch?full_index=1"
+  # sha256 "644f706bbbb708c2e1d32de65138c335c3710e6d47f86624f9dd98806627e83f"
+  # end
+
 
   def install
     # Remove almost all bundled gems and replace with our own set.
