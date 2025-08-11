@@ -16,6 +16,8 @@ module Homebrew
         EOS
         switch "--no-uninstall-deps",
                description: "Don't uninstall all dependencies of portable formulae before testing."
+        switch "--no-test",
+               description: "Skip running `brew test` for each formula."
         switch "-v", "--verbose",
                description: "Pass `--verbose` to `brew` commands."
         named_args :formula, min: 1
@@ -58,7 +60,7 @@ module Homebrew
             unless args.no_uninstall_deps?
               safe_system HOMEBREW_BREW_FILE, "uninstall", "--force", "--ignore-dependencies", *verbose, *deps
             end
-            safe_system HOMEBREW_BREW_FILE, "test", *verbose, name
+            safe_system HOMEBREW_BREW_FILE, "test", *verbose, name unless args.no_test?
             puts "Linkage information:"
             safe_system HOMEBREW_BREW_FILE, "linkage", *verbose, name
             bottle_args = %w[
