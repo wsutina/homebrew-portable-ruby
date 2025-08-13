@@ -81,7 +81,6 @@ class PortableRuby < PortableFormula
       --prefix=#{prefix}
       --enable-load-relative
       --with-static-linked-ext
-      --with-baseruby=#{RbConfig.ruby}
       --with-out-ext=win32,win32ole
       --without-gmp
       --disable-install-doc
@@ -95,6 +94,10 @@ class PortableRuby < PortableFormula
     ]
 
     if OS.linux?
+      # Ubuntu needs a baseruby for gem extraction, but Ruby 3.2.7 embeds the path
+      # Use the same approach as Ruby 3.4.3 but ensure it doesn't get embedded
+      args << "--with-baseruby=#{RbConfig.ruby}"
+      
       ENV["XCFLAGS"] = "-I#{libxcrypt.opt_include}"
       ENV["XLDFLAGS"] = "-L#{libxcrypt.opt_lib}"
 
