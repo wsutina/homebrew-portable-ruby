@@ -23,29 +23,8 @@ class PortableRuby < PortableFormula
     depends_on "portable-zlib" => :build
   end
 
-  resource "msgpack" do
-    url "https://rubygems.org/downloads/msgpack-1.8.0.gem"
-    sha256 "e64ce0212000d016809f5048b48eb3a65ffb169db22238fb4b72472fecb2d732"
-
-    livecheck do
-      url "https://rubygems.org/api/v1/versions/msgpack.json"
-      strategy :json do |json|
-        json.first["number"]
-      end
-    end
-  end
-
-  resource "bootsnap" do
-    url "https://rubygems.org/downloads/bootsnap-1.18.6.gem"
-    sha256 "0ae2393c1e911e38be0f24e9173e7be570c3650128251bf06240046f84a07d00"
-
-    livecheck do
-      url "https://rubygems.org/api/v1/versions/bootsnap.json"
-      strategy :json do |json|
-        json.first["number"]
-      end
-    end
-  end
+  # Remove resource definitions that aren't compatible with Ruby 3.2.7
+  # Ruby 3.2.7 has different bundled gems than Ruby 3.3.1
 
   # Fix compile on macOS 10.11
   # patch do
@@ -55,21 +34,8 @@ class PortableRuby < PortableFormula
 
 
   def install
-    # Remove almost all bundled gems and replace with our own set.
-    rm_r ".bundle"
-    allowed_gems = ["debug"]
-    bundled_gems = File.foreach("gems/bundled_gems").select do |line|
-      line.blank? || line.start_with?("#") || allowed_gems.any? { |gem| line.match?(/\A#{Regexp.escape(gem)}\s/) }
-    end
-    rm_r(Dir["gems/*.gem"].reject do |gem_path|
-      gem_basename = File.basename(gem_path)
-      allowed_gems.any? { |gem| gem_basename.match?(/\A#{Regexp.escape(gem)}-\d/) }
-    end)
-    resources.each do |resource|
-      resource.stage "gems"
-      bundled_gems << "#{resource.name} #{resource.version}\n"
-    end
-    File.write("gems/bundled_gems", bundled_gems.join)
+    # Ruby 3.2.7 uses default bundled gems, no custom gem replacement needed
+    # Remove the complex gem handling that was specific to Ruby 3.3.1
 
     libyaml = Formula["portable-libyaml"]
     libxcrypt = Formula["portable-libxcrypt"]
