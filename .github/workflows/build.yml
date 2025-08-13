@@ -16,14 +16,20 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: 10.11-cross-${{github.run_id}}
-          - os: 11-arm64-cross-${{github.run_id}}
+          # macOS builds for different architectures and compatibility
+          - os: macos-12  # Intel macOS for broader compatibility
+            arch: x86_64
+          - os: macos-14  # Apple Silicon macOS  
+            arch: arm64
+          # Linux builds for cross-platform support
           - os: ubuntu-latest
             container: '{"image": "ghcr.io/homebrew/ubuntu22.04:main", "options": "--user=linuxbrew"}'
             workdir: /github/home
+            arch: x86_64
           - os: ubuntu-22.04-arm
             container: '{"image": "ghcr.io/homebrew/ubuntu22.04:main", "options": "--user=linuxbrew"}'
             workdir: /github/home
+            arch: arm64
       fail-fast: false
     runs-on: ${{matrix.os}}
     container: ${{matrix.container && fromJSON(matrix.container) || ''}}
