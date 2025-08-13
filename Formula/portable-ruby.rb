@@ -169,7 +169,7 @@ class PortableRuby < PortableFormula
     assert_equal ruby.to_s, shell_output("#{ruby} -e 'puts RbConfig.ruby'").chomp
     assert_equal "3632233996",
       shell_output("#{ruby} -rzlib -e 'puts Zlib.crc32(\"test\")'").chomp
-    assert_equal " \t\n`><=;|&{(",
+    assert_equal " \t\n\"'`@$><=;|&{(",
       shell_output("#{ruby} -rreadline -e 'puts Readline.basic_word_break_characters'").chomp
     assert_equal '{"a" => "b"}',
       shell_output("#{ruby} -ryaml -e 'puts YAML.load(\"a: b\")'").chomp
