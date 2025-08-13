@@ -81,7 +81,6 @@ class PortableRuby < PortableFormula
       --prefix=#{prefix}
       --enable-load-relative
       --with-static-linked-ext
-      --with-baseruby=#{RbConfig.ruby}
       --with-out-ext=win32,win32ole
       --without-gmp
       --disable-install-doc
@@ -116,9 +115,23 @@ class PortableRuby < PortableFormula
     ENV["cppflags"] = ENV.delete("CPPFLAGS")
     ENV["cxxflags"] = ENV.delete("CXXFLAGS")
 
+    # Usually cross-compiling requires a host Ruby of the same version.
+    # In our scenario though, we can get away with using miniruby as it should run on newer macOS.
+    make_args = []
+    if OS.mac? && CROSS_COMPILING
+      ENV["MINIRUBY"] = "./miniruby -I$(srcdir)/lib -I. -I$(EXTOUT)/common"
+      make_args << "HAVE_BASERUBY=no"
+      make_args << "PREP=miniruby"
+      make_args << "RUN_OPTS=#{Dir.pwd}/tool/runruby.rb --extout=.ext"
+    end
+
     system "./configure", *args
-    system "make", "extract-gems"
-    system "make"
+    system "make", *make_args
+    system "make", "install", *make_args
+
+    # rake is a binstub for the RubyGem in 2.3 and has a hardcoded PATH.
+    # We don't need the binstub so remove it.
+    rm bin/"rake"
 
     # Add a helper load path file so bundled gems can be easily used (used by brew's standalone/init.rb)
     system "make", "ruby.pc"
@@ -169,21 +182,14 @@ class PortableRuby < PortableFormula
     assert_equal ruby.to_s, shell_output("#{ruby} -e 'puts RbConfig.ruby'").chomp
     assert_equal "3632233996",
       shell_output("#{ruby} -rzlib -e 'puts Zlib.crc32(\"test\")'").chomp
-    assert_equal " \t\n\"'`@$><=;|&{(",
+    assert_equal " \t\n\"\\'`@$><=;|&{(",
       shell_output("#{ruby} -rreadline -e 'puts Readline.basic_word_break_characters'").chomp
-    assert_equal '{"a" => "b"}',
+    assert_equal '{"a"=>"b"}',
       shell_output("#{ruby} -ryaml -e 'puts YAML.load(\"a: b\")'").chomp
     assert_equal "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       shell_output("#{ruby} -ropenssl -e 'puts OpenSSL::Digest::SHA256.hexdigest(\"\")'").chomp
     assert_match "200",
       shell_output("#{ruby} -ropen-uri -e 'URI.open(\"https://google.com\") { |f| puts f.status.first }'").chomp
-    system ruby, "-rrbconfig", "-e", <<~EOS
-      Gem.discover_gems_on_require = false
-      require "portable_ruby_gems"
-      require "debug"
-      require "fiddle"
-      require "bootsnap"
-    EOS
     system testpath/"bin/gem", "environment"
     system testpath/"bin/bundle", "init"
     # install gem with native components
