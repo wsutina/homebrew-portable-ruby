@@ -16,19 +16,19 @@ jobs:
     strategy:
       matrix:
         os: [
-          ubuntu-22.04,     # linux-amd64
-          ubuntu-22.04-arm, # linux-arm64
+          # ubuntu-22.04,     # linux-amd64
+          # ubuntu-22.04-arm, # linux-arm64
           macos-13,         # darwin-amd64 (Intel)
           macos-latest      # darwin-arm64 (Apple Silicon) - uses standard runner
         ]
-        include:
+        # include:
           # Add container config for Linux builds only
-          - os: ubuntu-22.04
-            container: '{"image": "ghcr.io/homebrew/ubuntu22.04:main", "options": "--user=linuxbrew"}'
-            workdir: /github/home
-          - os: ubuntu-22.04-arm
-            container: '{"image": "ghcr.io/homebrew/ubuntu22.04:main", "options": "--user=linuxbrew"}'
-            workdir: /github/home
+          # - os: ubuntu-22.04
+          #   container: '{"image": "ghcr.io/homebrew/ubuntu22.04:main", "options": "--user=linuxbrew"}'
+          #   workdir: /github/home
+          # - os: ubuntu-22.04-arm
+          #   container: '{"image": "ghcr.io/homebrew/ubuntu22.04:main", "options": "--user=linuxbrew"}'
+          #   workdir: /github/home
       fail-fast: false
     runs-on: ${{matrix.os}}
     container: ${{matrix.container && fromJSON(matrix.container) || ''}}
